@@ -1,4 +1,5 @@
-use actix_web::{web, get, HttpResponse, Responder, Result};
+use actix_web::{web, get, post, HttpResponse, Responder, Result};
+use serde::Deserialize;
 
 // pub mod auth;
 use super::AppState as AppState;
@@ -10,6 +11,7 @@ pub fn routes_config(cfg: &mut web::ServiceConfig) {
           app_name: String::from("Test")
         })
         .service(index)
+        .service(json)
         .service(index2)
         .service(app)
     );
@@ -26,6 +28,19 @@ async fn index(
   info: web::Path<(u32, String)>
 ) -> Result<String> {
   Ok(format!("User #{}: \"{}\".", info.0, info.1))
+}
+
+#[derive(Deserialize)]
+struct JsonTest {
+  user: u32,
+  name: String
+}
+
+#[post("/json")]
+async fn json(
+  info: web::Json<JsonTest>
+) -> Result<String> {
+  Ok(format!("User #{}: \"{}\".", info.user, info.name))
 }
 
 #[get("/again")]

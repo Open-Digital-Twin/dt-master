@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 actix-web = "2.0"
 actix-rt = "1.1.0"
+serde = "1.0.106"
 
 [dev-dependencies]
 cargo-run-script = "0.1.0"
