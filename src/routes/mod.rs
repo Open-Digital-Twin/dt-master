@@ -1,4 +1,4 @@
-use actix_web::{web, get, HttpResponse, Responder};
+use actix_web::{web, get, HttpResponse, Responder, Result};
 
 // pub mod auth;
 use super::AppState as AppState;
@@ -21,13 +21,15 @@ pub fn routes_config(cfg: &mut web::ServiceConfig) {
     */
 }
 
-#[get("")]
-pub async fn index() -> impl Responder {
-  HttpResponse::Ok().body("Hello world!")
+#[get("users/{id}/{name}")]
+async fn index(
+  info: web::Path<(u32, String)>
+) -> Result<String> {
+  Ok(format!("User #{}: \"{}\".", info.0, info.1))
 }
 
 #[get("/again")]
-pub async fn index2() -> impl Responder {
+async fn index2() -> impl Responder {
   HttpResponse::Ok().body("Hello world again!")
 }
 
