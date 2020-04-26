@@ -16,7 +16,7 @@ async fn main() -> std::io::Result<()> {
       })
       .configure(routes_config)
   })
-  .bind("127.0.0.1:8088")?
+  .bind("0.0.0.0:3000")?
   .run()
   .await
 }
