@@ -8,7 +8,6 @@ use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, 
 use mongodb::error::Error;
 use mongodb::Client;
 
-
 pub trait IUserRepository {
   fn find_user_with_email(&self, email: String) -> Result<Option<User>, Error>;
   fn login(&self, login: Login) -> Result<LoginResponse, Response>;
@@ -26,11 +25,15 @@ impl IUserRepository for UserRepository {
     let _config: Config = Config {};
     let database_name = _config.get_config_with_key("DATABASE_NAME");
     let collection_name = _config.get_config_with_key("USER_COLLECTION_NAME");
+
     let db = self.connection.database(database_name.as_str());
+
+    // Find one user with email
     let cursor = db
     .collection(collection_name.as_str())
     .find_one(doc! {"email": email}, None)
     .unwrap();
+
     match cursor {
       Some(doc) => match bson::from_bson(bson::Bson::Document(doc)) {
         Ok(model) => Ok(model),
@@ -39,11 +42,13 @@ impl IUserRepository for UserRepository {
       None => Ok(None),
     }
   }
+
   fn login(&self, user: Login) -> Result<LoginResponse, Response> {
     match self.find_user_with_email(user.email.to_string()).unwrap() {
       Some(x) => {
         let mut sha = Sha256::new();
         sha.input_str(user.password.as_str());
+        
         if x.password == sha.result_str() {
           // JWT
           let _config: Config = Config {};
@@ -57,16 +62,19 @@ impl IUserRepository for UserRepository {
           } else {
             _date = Utc::now() + Duration::days(365);
           }
+          
           let my_claims = Claims {
             sub: user.email,
             exp: _date.timestamp() as usize,
           };
+          
           let token = encode(
             &Header::default(),
             &my_claims,
             &EncodingKey::from_secret(key),
           )
           .unwrap();
+          
           Ok(LoginResponse {
             status: true,
             token,
@@ -85,14 +93,16 @@ impl IUserRepository for UserRepository {
       }),
     }
   }
+
   fn register(&self, user: Register) -> Response {
     let _exist = self
     .find_user_with_email((&user.email).parse().unwrap())
     .unwrap();
+
     match _exist {
       Some(_) => {
         Response {
-          message: "This e-mail is using by some user, please enter another e-mail."
+          message: "This e-mail is used by some user, please enter another e-mail."
           .to_string(),
           status: false,
         }
@@ -101,12 +111,22 @@ impl IUserRepository for UserRepository {
         let _config: Config = Config {};
         let database_name = _config.get_config_with_key("DATABASE_NAME");
         let collection_name = _config.get_config_with_key("USER_COLLECTION_NAME");
+
         let db = self.connection.database(database_name.as_str());
+
         let mut sha = Sha256::new();
         sha.input_str(user.password.as_str());
         let hash_pw = sha.result_str();
         let user_id = uuid::Uuid::new_v4().to_string();
-        let _ex = db.collection(collection_name.as_str()).insert_one(doc! {"user_id": user_id, "name": user.name, "surname": user.surname, "email": user.email, "password": hash_pw, "phone": "", "birth_date": "" }, None);
+        
+        let _ex = db.collection(collection_name.as_str()).insert_one(doc! {
+          "user_id": user_id,
+          "name": user.name,
+          "email": user.email,
+          "password": hash_pw,
+          "birth_date": ""
+        }, None);
+
         match _ex {
           Ok(_) => Response {
             status: true,
@@ -130,6 +150,7 @@ impl IUserRepository for UserRepository {
       &DecodingKey::from_secret(key),
       &Validation::new(Algorithm::HS256),
     );
+
     match _decode {
       Ok(decoded) => {
         match self.find_user_with_email((decoded.claims.sub.to_string()).parse().unwrap()) {

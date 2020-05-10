@@ -19,6 +19,7 @@ impl FromRequest for AuthorizationService {
           let _split: Vec<&str> = _auth.unwrap().to_str().unwrap().split("Bearer").collect();
           let token = _split[1].trim();
           let _config: Config = Config {};
+          
           let _var = _config.get_config_with_key("SECRET_KEY");
           let key = _var.as_bytes();
 
