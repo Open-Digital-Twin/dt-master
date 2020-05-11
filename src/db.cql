@@ -20,6 +20,14 @@ CREATE TABLE IF NOT EXISTS twin (
   created_at timestamp # toTimestamp(now())
 );
 
+# Structure
+# id, name, list of devices
+
 # Device
+# id, name, list of sensors
 
 # Sensor
+# id, name, type of data
+
+# Sensor data
+# id, value, timestamp, created_at

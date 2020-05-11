@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
+use cdrs::frame::IntoBytes;
+use cdrs::types::from_cdrs::FromCDRSByName;
+use cdrs::types::prelude::*;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, IntoCDRSValue, TryFromRow, PartialEq)]
 pub struct User {
   pub id: i64,
   pub email: String,
@@ -16,11 +19,11 @@ pub struct Login {
   pub remember_me: bool
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
-  pub sub: String,
-  pub exp: usize
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// pub struct Claims {
+//   pub sub: String,
+//   pub exp: usize
+// }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Register {
