@@ -3,6 +3,8 @@
 extern crate envy;
 extern crate env_logger;
 
+use log::{info};
+
 #[macro_use]
 extern crate serde_derive;
 
@@ -31,8 +33,10 @@ mod routes;
 
 pub type CurrentSession = Session<RoundRobin<TcpConnectionPool<NoneAuthenticator>>>;
 
-fn start_db_session() -> Arc<CurrentSession> {
-  let node = NodeTcpConfigBuilder::new("localhost:9042", NoneAuthenticator {}).build();
+fn start_db_session(addr: String) -> Arc<CurrentSession> {
+  info!("Starting db session for worker");
+
+  let node = NodeTcpConfigBuilder::new(&addr, NoneAuthenticator {}).build();
   let cluster_config = ClusterTcpConfig(vec![node]);
 
   let _session: Arc<CurrentSession> = Arc::new(
@@ -64,7 +68,9 @@ async fn main() -> std::io::Result<()> {
   HttpServer::new(move || {
     App::new()
       .data(envy::from_env::<Environment>().unwrap())
-      .data(start_db_session().clone())
+      .data(start_db_session(
+        env::var("DB_ADDRESS").unwrap()
+      ).clone())
       .wrap(middleware::Compress::new(ContentEncoding::Br))
       .wrap(middleware::Logger::default())
       .service(web::scope("/user").configure(routes::auth::init_routes))
