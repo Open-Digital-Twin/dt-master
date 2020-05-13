@@ -1,5 +1,11 @@
 #![allow(dead_code)]
 
+extern crate envy;
+extern crate env_logger;
+
+#[macro_use]
+extern crate serde_derive;
+
 use cdrs::authenticators::{NoneAuthenticator};
 use cdrs::cluster::session::{new as new_session, Session};
 use cdrs::cluster::{ClusterTcpConfig, NodeTcpConfigBuilder, TcpConnectionPool};
@@ -16,8 +22,11 @@ use actix_web::{middleware, web, App, HttpServer};
 
 use dotenv::dotenv;
 
+
 // mod middlewares;
 mod models;
+use crate::models::app::*;
+
 mod routes;
 
 pub type CurrentSession = Session<RoundRobin<TcpConnectionPool<NoneAuthenticator>>>;
@@ -33,7 +42,6 @@ fn start_db_session() -> Arc<CurrentSession> {
   
   _session
 }
-
 
 // fn insert_struct(session: &CurrentSession) {
 //     let row = Twin {
@@ -51,20 +59,18 @@ fn start_db_session() -> Arc<CurrentSession> {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
   dotenv().ok();
+  env_logger::init();
 
-  let database_url = env::var("DB_ADDRESS").unwrap();
-  println!("{}", database_url);
-  
   HttpServer::new(move || {
     App::new()
-      // .data(config)
+      .data(envy::from_env::<Environment>().unwrap())
       .data(start_db_session().clone())
       .wrap(middleware::Compress::new(ContentEncoding::Br))
       .wrap(middleware::Logger::default())
       .service(web::scope("/user").configure(routes::auth::init_routes))
       // .configure(routes_config)
   })
-  .bind("0.0.0.0:3000")?
+  .bind(env::var("SERVER_ADDRESS").unwrap())?
   .run()
   .await
 }
