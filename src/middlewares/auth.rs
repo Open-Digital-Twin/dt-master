@@ -15,7 +15,7 @@ impl FromRequest for AuthValidator {
     type Future = Ready<Result<Self, Self::Error>>;
     type Config = ();
 
-    fn from_request(_req: &HttpRequest, payload: &mut dev::Payload) -> Self::Future {
+    fn from_request(_req: &HttpRequest, _payload: &mut dev::Payload) -> Self::Future {
       let _auth = _req.headers().get("Authorization");
 
       match _auth {

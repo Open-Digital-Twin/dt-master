@@ -27,7 +27,6 @@ use actix_web::{middleware, web, App, HttpServer};
 
 use dotenv::dotenv;
 
-
 mod middlewares;
 mod models;
 use crate::models::app::*;
@@ -64,7 +63,7 @@ async fn main() -> std::io::Result<()> {
       ).clone())
       .wrap(middleware::Compress::new(ContentEncoding::Br))
       .wrap(middleware::Logger::default())
-      .service(web::scope("/user").configure(routes::auth::init_routes))
+      .service(web::scope("/user").configure(routes::user::init_routes))
       // .configure(routes_config)
   })
   .bind(env::var("SERVER_ADDRESS").unwrap())?
