@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+extern crate argon2;
+extern crate rand;
 
 extern crate envy;
 extern crate env_logger;
@@ -48,19 +50,6 @@ fn start_db_session(addr: String) -> Arc<CurrentSession> {
   
   _session
 }
-
-// fn insert_struct(session: &CurrentSession) {
-//     let row = Twin {
-//       id: 300000i64,
-//       name: "Maike".to_string()
-//     };
-
-//     let insert_struct_cql = "INSERT INTO test_ks.twin (id, name) VALUES (?, ?)";
-
-//     session
-//       .query_with_values(insert_struct_cql, row.into_query())
-//       .expect("insert");
-// }
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {

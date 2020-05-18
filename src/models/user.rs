@@ -11,19 +11,19 @@ pub struct User {
   pub password: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Login {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct UserLogin {
   pub email: String,
   pub password: String,
   #[serde(default)]
   pub remember_me: bool
 }
 
-// #[derive(Debug, Serialize, Deserialize)]
-// pub struct Claims {
-//   pub sub: String,
-//   pub exp: usize
-// }
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Claims {
+  pub sub: String,
+  pub exp: usize
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Register {

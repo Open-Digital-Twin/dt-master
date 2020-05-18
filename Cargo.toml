@@ -25,6 +25,8 @@ envy = "0.4.1"
 serde_derive = "1.0.110"
 log = "0.4.8"
 env_logger = "0.7.1"
+rust-argon2 = "0.8.2"
+rand = "0.7.3"
 
 [dev-dependencies]
 cargo-run-script = "0.1.0"
