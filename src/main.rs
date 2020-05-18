@@ -28,7 +28,7 @@ use actix_web::{middleware, web, App, HttpServer};
 use dotenv::dotenv;
 
 
-// mod middlewares;
+mod middlewares;
 mod models;
 use crate::models::app::*;
 
@@ -72,3 +72,4 @@ async fn main() -> std::io::Result<()> {
   .run()
   .await
 }
+

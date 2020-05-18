@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 actix-web = "3.0.0-alpha.2"
+actix-web-httpauth = "0.4.1"
 actix-rt = "1.1.1"
 cdrs = { version = "2" }
 cdrs_helpers_derive = "0.3.3"

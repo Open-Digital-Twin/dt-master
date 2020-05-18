@@ -7,6 +7,7 @@ use crate::models::user::{User, UserLogin, Claims, Register};
 use crate::models::app::{Environment};
 use crate::models::response::{LoginResponse, Response};
 use crate::{CurrentSession};
+use crate::middlewares::auth::AuthValidator;
 use std::sync::Arc;
 
 use chrono::{DateTime, Duration, Utc};
@@ -19,8 +20,7 @@ use rand::distributions::Alphanumeric;
 // use crate::routes::user::{IUserRepository, UserRepository};
 // use actix_web::http::StatusCode;
 // use actix_web::{post, get, web, HttpRequest, HttpResponse};
-use actix_web::{post, web, HttpResponse};
-
+use actix_web::{get, post, web, HttpResponse};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 
 #[post("/login")]
@@ -187,18 +187,21 @@ fn get_user(session: web::Data<Arc<CurrentSession>>, email: String) -> Result<Us
 //   }
 // }
 
-// #[post("/protectedRoute")]
-// async fn protected(_: AuthorizationService) -> HttpResponse {
-//   let _connection: Connection = Connection {};
-//   let _repository: UserRepository = UserRepository {
-//     connection: _connection.init(),
-//   };
-//   HttpResponse::Ok().json(_repository.protected_function())
-// }
+#[get("/temp")]
+async fn temp(auth: AuthValidator) -> HttpResponse {
+  println!("opa");
+  HttpResponse::Ok().json(Response {
+    status: true,
+    message: "opa".to_string()
+  })
+}
+
+
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
   cfg.service(login);
   cfg.service(register);
+  cfg.service(temp);
   // cfg.service(user_informations);
   // cfg.service(user_informations_get);
   // cfg.service(protected);
