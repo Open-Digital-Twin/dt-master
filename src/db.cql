@@ -6,11 +6,19 @@ CREATE KEYSPACE IF NOT EXISTS dt_master WITH REPLICATION = {
 USE dt_master;
 
 # User
-CREATE TYPE IF NOT EXISTS user (
-  id UUID PRIMARY KEY,
+-- CREATE TYPE IF NOT EXISTS user (
+--   id UUID,
+--   email text,
+--   name text,
+--   password text
+-- );
+
+CREATE TABLE IF NOT EXISTS user (
+  id text,
   email text,
   name text,
-  password text
+  password text,
+  PRIMARY KEY (email)
 );
 
 # Twin Instance

@@ -3,8 +3,8 @@ use cdrs::query::*;
 use cdrs::frame::TryFromRow;
 
 // use crate::middlewares::auth::AuthorizationService;
-use crate::models::user::{User, Login};
-use crate::models::response::{LoginResponse};
+use crate::models::user::{User, Login, Register};
+use crate::models::response::{LoginResponse, Response};
 // use crate::models::app::{AppState};
 use crate::{CurrentSession};
 use std::sync::Arc;
@@ -14,48 +14,55 @@ use std::sync::Arc;
 // use actix_web::{post, get, web, HttpRequest, HttpResponse};
 use actix_web::{post, web, HttpResponse};
 
-#[post("/login")]
-async fn login(session: web::Data<Arc<CurrentSession>>, login: web::Json<Login>) -> HttpResponse {
-  
+
+#[post("/register")]
+async fn register(session: web::Data<Arc<CurrentSession>>, user: web::Json<Register>) -> HttpResponse {
+  let _usr = get_user(session.clone(), user.email.clone());
+
+  match _usr {
+    Ok(user) => HttpResponse::Ok().json(Response {
+      message: format!("User {} already exists.", user.email.to_string()),
+      status: false
+    }),
+    Err(_) => {
+      session.query_with_values(
+        "INSERT INTO user (email, id, name, password) VALUES (?, ?, ?, ?)",
+        query_values!(
+          user.email.to_string(),
+          uuid::Uuid::new_v4().to_string(),
+          user.name.to_string(),
+          user.password.to_string()
+        )
+      ).expect("Inserted new user");
+
+      HttpResponse::Ok().json(Response {
+        message: format!("Success in creating user {}.", user.email.to_string()),
+        status: true
+      })
+    }
+  }
+}
+
+fn get_user(session: web::Data<Arc<CurrentSession>>, email: String) -> Result<User, String> {
   let rows = session.query_with_values(
-    "SELECT * FROM user WHERE email = ?",
-    query_values!(login.email.to_string())
+    "SELECT * FROM user WHERE email = ? ALLOW FILTERING",
+    query_values!(email)
   )
     .expect("select user with email")
     .get_body().unwrap()
     .into_rows().unwrap();
 
-  for row in rows {
-    let my_row: User = User::try_from_row(row).unwrap();
-    println!("struct got: {:?}", my_row);
+  if !rows.is_empty() {
+    let usr = match User::try_from_row(rows[0].clone()) {
+      Ok(_model) => _model,
+      Err(_) => return Err("Could not convert rows to User model.".to_string())
+    };
+
+    println!("User {}.", usr.email);
+    return Ok(usr);
   }
-
-  // let _repository: UserRepository = UserRepository {
-  //   connection: _connection.init(),
-  // };
-  // let proc = _repository.login(user.into_inner());
-  HttpResponse::Ok().json(LoginResponse {
-    status: true,
-    token: login.email.to_string(),
-    message: "You have successfully logged in.".to_string(),
-  })
-
-  // match proc {
-  //   Ok(_) => HttpResponse::Ok().body({}),//json(proc.unwrap()),
-  //   Err(_) => HttpResponse::Ok()
-  //     .status(StatusCode::from_u16(401).unwrap())
-  //     .json(proc.unwrap_err()),
-  // }
+  return Err("No user with selected email".to_string());
 }
-
-// #[post("/register")]
-// async fn register(user: web::Json<Register>) -> HttpResponse {
-//   let _connection: Connection = Connection {};
-//   let _repository: UserRepository = UserRepository {
-//     connection: _connection.init(),
-//   };
-//   HttpResponse::Ok().json(_repository.register(user.into_inner()))
-// }
 
 // #[post("/userInformations")]
 // async fn user_informations(_req: HttpRequest) -> HttpResponse {
@@ -98,7 +105,7 @@ async fn login(session: web::Data<Arc<CurrentSession>>, login: web::Json<Login>)
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
   cfg.service(login);
-  // cfg.service(register);
+  cfg.service(register);
   // cfg.service(user_informations);
   // cfg.service(user_informations_get);
   // cfg.service(protected);

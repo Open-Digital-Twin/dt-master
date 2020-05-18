@@ -12,6 +12,7 @@ use cdrs::authenticators::{NoneAuthenticator};
 use cdrs::cluster::session::{new as new_session, Session};
 use cdrs::cluster::{ClusterTcpConfig, NodeTcpConfigBuilder, TcpConnectionPool};
 use cdrs::load_balancing::RoundRobin;
+use cdrs::query::*;
 
 use std::sync::Arc;
 use std::env;
@@ -43,6 +44,7 @@ fn start_db_session(addr: String) -> Arc<CurrentSession> {
     new_session(&cluster_config, RoundRobin::new())
       .expect("session should be created")
   );
+  _session.query("USE dt_master;").unwrap();
   
   _session
 }
@@ -77,6 +79,7 @@ async fn main() -> std::io::Result<()> {
       // .configure(routes_config)
   })
   .bind(env::var("SERVER_ADDRESS").unwrap())?
+  .workers(1)
   .run()
   .await
 }

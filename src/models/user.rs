@@ -5,8 +5,8 @@ use cdrs::types::prelude::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug, IntoCDRSValue, TryFromRow, PartialEq)]
 pub struct User {
-  pub id: i64,
   pub email: String,
+  pub id: String,
   pub name: String,
   pub password: String
 }
@@ -25,7 +25,7 @@ pub struct Login {
 //   pub exp: usize
 // }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Register {
   pub name: String,
   pub email: String,
